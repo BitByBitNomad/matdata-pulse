@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Flutter / Dart / Mobile
+App/.dart_tool/
+App/.flutter-plugins
+App/.flutter-plugins-dependencies
+App/.packages
+App/build/
+App/.idea/
+App/*.iml
+App/ios/Pods/
+App/ios/.symlinks/
+App/android/.gradle/
+App/android/local.properties
+*.apk
+*.aab
+
+# IDE & OS
+.vscode/
+.DS_Store
+Thumbs.db
