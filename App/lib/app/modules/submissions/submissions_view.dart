@@ -46,57 +46,57 @@ class SubmissionsView extends GetView<SubmissionsController> {
                 children: [
                   Expanded(
                     child: Obx(
-                      () => SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            'All',
-                            AppConstants.syncStatusPending,
-                            AppConstants.syncStatusSynced,
-                          ].map((filter) {
-                            final active = controller.filterStatus.value == filter;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: FilterChip(
-                                label: Text(filter, style: const TextStyle(fontSize: 12)),
-                                selected: active,
-                                onSelected: (_) => controller.filterStatus.value = filter,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Obx(
-                    () => ElevatedButton.icon(
-                      onPressed: controller.isSyncing.value ? null : controller.syncNow,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        backgroundColor: controller.pendingCount > 0
-                            ? AppTheme.indigoAccent
-                            : const Color(0xFF475569),
-                      ),
-                      icon: controller.isSyncing.value
-                          ? const SizedBox(
-                              height: 16,
-                              width: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.cloud_upload_outlined, size: 18),
-                      label: Text(
-                        controller.isSyncing.value
-                            ? 'Syncing...'
-                            : 'Sync Now (${controller.pendingCount})',
-                        style: const TextStyle(fontSize: 13),
+                      () => Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          'All',
+                          AppConstants.syncStatusPending,
+                          AppConstants.syncStatusSynced,
+                        ].map((filter) {
+                          final active = controller.filterStatus.value == filter;
+                          return ChoiceChip(
+                            label: Text(filter, style: const TextStyle(fontSize: 12)),
+                            selected: active,
+                            visualDensity: VisualDensity.compact,
+                            onSelected: (_) => controller.filterStatus.value = filter,
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: Obx(
+                  () => ElevatedButton.icon(
+                    onPressed: controller.isSyncing.value ? null : controller.syncNow,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                      backgroundColor: controller.pendingCount > 0
+                          ? AppTheme.indigoAccent
+                          : const Color(0xFF475569),
+                    ),
+                    icon: controller.isSyncing.value
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.cloud_upload_outlined, size: 18),
+                    label: Text(
+                      controller.isSyncing.value
+                          ? 'Syncing Pending Surveys...'
+                          : 'Sync Now (${controller.pendingCount} Pending)',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

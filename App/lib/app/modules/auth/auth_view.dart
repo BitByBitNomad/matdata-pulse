@@ -124,7 +124,10 @@ class AuthView extends GetView<AuthController> {
                       OutlinedButton.icon(
                         onPressed: controller.fillDemoWorker,
                         icon: const Icon(Icons.flash_on_rounded, size: 18),
-                        label: const Text('Fill Demo Field Worker Credentials'),
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('Fill Demo Worker Credentials'),
+                        ),
                       ),
                     ],
                   ),

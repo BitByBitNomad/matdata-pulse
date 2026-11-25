@@ -38,9 +38,9 @@ void main() {
 
     expect(find.text('Matdata Pulse'), findsOneWidget);
     expect(find.text('Sign In to Field Ops'), findsOneWidget);
-    expect(find.text('Fill Demo Field Worker Credentials'), findsOneWidget);
+    expect(find.text('Fill Demo Worker Credentials'), findsOneWidget);
 
-    await tester.tap(find.text('Fill Demo Field Worker Credentials'));
+    await tester.tap(find.text('Fill Demo Worker Credentials'));
     await tester.pump();
 
     expect(find.text('rohan.field@matdatapulse.in'), findsOneWidget);
