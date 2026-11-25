@@ -188,12 +188,11 @@ export async function seedDatabase(): Promise<void> {
     for (let i = 0; i < SAMPLE_SURVEYS.length; i++) {
       const s = SAMPLE_SURVEYS[i];
       const collectorId = userIdByEmail.get(s.collectorEmail)!;
-      const deterministicClientId = crypto
+      const hash = crypto
         .createHash('md5')
         .update(`seed-survey-${i}-${s.mobileNumber}`)
-        .digest('hex')
-        .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-4$3-8$4-$5')
-        .slice(0, 36);
+        .digest('hex');
+      const deterministicClientId = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 
       const collectedAt = new Date(Date.now() - (SAMPLE_SURVEYS.length - i) * 3_600_000 * 4);
 

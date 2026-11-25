@@ -33,7 +33,7 @@ matdata-pulse/
 ```bash
 docker compose up --build -d
 # Run database seed once server/postgres are healthy:
-docker compose exec server npm run db:seed
+docker compose exec server npm run db:seed:prod
 ```
 
 - **Backend API**: `http://localhost:5000` (`GET /health`)
