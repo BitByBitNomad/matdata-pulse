@@ -14,11 +14,14 @@ class SurveyFormView extends GetView<SurveyFormController> {
     return Form(
       key: controller.formKey,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
         children: [
+          _CompletionHeader(controller: controller),
+          const SizedBox(height: 14),
           _SectionCard(
-            title: 'Voter Details',
-            subtitle: 'Capture citizen demographic & contact details',
+            stepNumber: '1',
+            title: 'Citizen Identity',
+            subtitle: 'Demographics and contact verification',
             children: [
               TextFormField(
                 controller: controller.voterNameController,
@@ -26,7 +29,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                 decoration: const InputDecoration(
                   labelText: 'Voter Full Name *',
                   hintText: 'e.g., Rajeshwari Deshpande',
-                  prefixIcon: Icon(Icons.person_outline_rounded),
+                  prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
                 ),
                 validator: SurveyValidators.validateName,
               ),
@@ -63,14 +66,14 @@ class SurveyFormView extends GetView<SurveyFormController> {
                       decoration: const InputDecoration(
                         labelText: '10-Digit Mobile *',
                         hintText: '98XXXXXXXX',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                        prefixIcon: Icon(Icons.phone_outlined, size: 20),
                       ),
                       validator: SurveyValidators.validateMobile,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               const Text(
                 'Gender *',
                 style: TextStyle(
@@ -79,7 +82,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                   color: Color(0xFF334155),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Obx(
                 () => Row(
                   children: AppConstants.genders.map((g) {
@@ -87,15 +90,11 @@ class SurveyFormView extends GetView<SurveyFormController> {
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: ChoiceChip(
-                          label: Center(child: Text(g)),
+                        child: _AnimatedOptionTile(
+                          label: g,
                           selected: selected,
-                          selectedColor: AppTheme.indigoAccent.withValues(alpha: 0.16),
-                          labelStyle: TextStyle(
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                            color: selected ? AppTheme.indigoAccent : const Color(0xFF475569),
-                          ),
-                          onSelected: (_) => controller.selectedGender.value = g,
+                          activeColor: AppTheme.cobaltAccent,
+                          onTap: () => controller.selectedGender.value = g,
                         ),
                       ),
                     );
@@ -106,8 +105,9 @@ class SurveyFormView extends GetView<SurveyFormController> {
           ),
           const SizedBox(height: 14),
           _SectionCard(
-            title: 'Booth & Civic Intelligence',
-            subtitle: 'Constituency mapping and voter sentiment',
+            stepNumber: '2',
+            title: 'Booth & Civic Pulse',
+            subtitle: 'Constituency, priority issue, and citizen mood',
             children: [
               TextFormField(
                 controller: controller.constituencyController,
@@ -115,7 +115,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                 decoration: const InputDecoration(
                   labelText: 'Assembly Constituency *',
                   hintText: 'e.g., Shivajinagar',
-                  prefixIcon: Icon(Icons.location_city_rounded),
+                  prefixIcon: Icon(Icons.location_city_rounded, size: 20),
                 ),
                 validator: (v) =>
                     SurveyValidators.validateRequiredField(v, 'Assembly Constituency'),
@@ -126,7 +126,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                 decoration: const InputDecoration(
                   labelText: 'Ward Number *',
                   hintText: 'e.g., Ward 14',
-                  prefixIcon: Icon(Icons.map_outlined),
+                  prefixIcon: Icon(Icons.map_outlined, size: 20),
                 ),
                 validator: (v) => SurveyValidators.validateRequiredField(v, 'Ward Number'),
               ),
@@ -136,7 +136,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                   initialValue: controller.selectedIssue.value,
                   decoration: const InputDecoration(
                     labelText: 'Priority Civic Issue *',
-                    prefixIcon: Icon(Icons.report_problem_outlined),
+                    prefixIcon: Icon(Icons.report_problem_outlined, size: 20),
                   ),
                   items: AppConstants.civicIssues
                       .map((issue) => DropdownMenuItem(value: issue, child: Text(issue)))
@@ -174,16 +174,12 @@ class SurveyFormView extends GetView<SurveyFormController> {
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: ChoiceChip(
-                          avatar: Icon(icon, size: 18, color: color),
-                          label: Text(sentiment, style: const TextStyle(fontSize: 12)),
+                        child: _AnimatedOptionTile(
+                          label: sentiment,
+                          icon: icon,
                           selected: selected,
-                          selectedColor: color.withValues(alpha: 0.14),
-                          labelStyle: TextStyle(
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                            color: selected ? color : const Color(0xFF475569),
-                          ),
-                          onSelected: (_) => controller.selectedSentiment.value = sentiment,
+                          activeColor: color,
+                          onTap: () => controller.selectedSentiment.value = sentiment,
                         ),
                       ),
                     );
@@ -197,7 +193,7 @@ class SurveyFormView extends GetView<SurveyFormController> {
                 maxLength: 500,
                 decoration: const InputDecoration(
                   labelText: 'Surveyor Notes',
-                  hintText: 'Key citizen feedback, booth observations...',
+                  hintText: 'Key citizen feedback or booth remarks...',
                   alignLabelWithHint: true,
                 ),
               ),
@@ -213,27 +209,87 @@ class SurveyFormView extends GetView<SurveyFormController> {
                       width: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Icon(Icons.save_alt_rounded),
+                  : const Icon(Icons.check_circle_outline_rounded, size: 20),
               label: Text(
-                controller.isSubmitting.value
-                    ? 'Saving Survey...'
-                    : 'Save Survey Entry',
+                controller.isSubmitting.value ? 'Saving Entry...' : 'Save Survey Entry',
               ),
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
 }
 
+class _CompletionHeader extends StatelessWidget {
+  final SurveyFormController controller;
+  const _CompletionHeader({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final pct = (controller.completionRatio.value * 100).round();
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.borderHairline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'New Household Survey',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.navyPrimary,
+                  ),
+                ),
+                Text(
+                  '$pct% ready',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.cobaltAccent,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: controller.completionRatio.value),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                builder: (_, val, __) => LinearProgressIndicator(
+                  value: val,
+                  minHeight: 6,
+                  backgroundColor: const Color(0xFFE2E8F0),
+                  color: val >= 0.99 ? AppTheme.syncedGreen : AppTheme.cobaltAccent,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
 class _SectionCard extends StatelessWidget {
+  final String stepNumber;
   final String title;
   final String subtitle;
   final List<Widget> children;
 
   const _SectionCard({
+    required this.stepNumber,
     required this.title,
     required this.subtitle,
     required this.children,
@@ -247,22 +303,115 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.navyPrimary,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+            Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppTheme.navyPrimary,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(
+                    stepNumber,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.navyPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             ...children,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedOptionTile extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final bool selected;
+  final Color activeColor;
+  final VoidCallback onTap;
+
+  const _AnimatedOptionTile({
+    required this.label,
+    this.icon,
+    required this.selected,
+    required this.activeColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(11),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 6),
+          decoration: BoxDecoration(
+            color: selected ? activeColor.withValues(alpha: 0.1) : const Color(0xFFFAFBFD),
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(
+              color: selected ? activeColor : AppTheme.borderHairline,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 16,
+                  color: selected ? activeColor : AppTheme.mutedText,
+                ),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected ? activeColor : const Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

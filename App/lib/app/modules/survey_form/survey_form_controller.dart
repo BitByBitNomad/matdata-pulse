@@ -28,6 +28,7 @@ class SurveyFormController extends GetxController {
   final RxString selectedIssue = AppConstants.civicIssues.first.obs;
   final RxString selectedSentiment = 'Positive'.obs;
   final RxBool isSubmitting = false.obs;
+  final RxDouble completionRatio = 0.2.obs;
 
   @override
   void onInit() {
@@ -39,6 +40,28 @@ class SurveyFormController extends GetxController {
     } else {
       constituencyController.text = AppConstants.sampleConstituencies.first;
     }
+
+    for (final ctrl in [
+      voterNameController,
+      ageController,
+      mobileController,
+      constituencyController,
+      wardController,
+    ]) {
+      ctrl.addListener(_recalculateCompletion);
+    }
+    _recalculateCompletion();
+  }
+
+  void _recalculateCompletion() {
+    var filled = 0;
+    const totalRequired = 5;
+    if (voterNameController.text.trim().length >= 2) filled++;
+    if (int.tryParse(ageController.text.trim()) != null) filled++;
+    if (mobileController.text.trim().length == 10) filled++;
+    if (constituencyController.text.trim().length >= 2) filled++;
+    if (wardController.text.trim().isNotEmpty) filled++;
+    completionRatio.value = (filled / totalRequired).clamp(0.08, 1.0);
   }
 
   Future<void> submitSurvey() async {
@@ -64,7 +87,6 @@ class SurveyFormController extends GetxController {
       // Step 1: Always persist locally FIRST so offline data is never lost
       await _surveyRepo.saveSurveyLocally(survey);
 
-      // Refresh Submissions list immediately
       if (Get.isRegistered<SubmissionsController>()) {
         Get.find<SubmissionsController>().loadLocalSurveys();
       }
@@ -95,7 +117,7 @@ class SurveyFormController extends GetxController {
 
       Get.snackbar(
         'Saved Offline (Pending Sync)',
-        'Device is offline or server unreachable. Record safely queued locally.',
+        'Record safely queued on device and ready for sync.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppTheme.pendingOrange,
         colorText: Colors.white,
@@ -116,6 +138,7 @@ class SurveyFormController extends GetxController {
     selectedGender.value = 'Male';
     selectedIssue.value = AppConstants.civicIssues.first;
     selectedSentiment.value = 'Positive';
+    _recalculateCompletion();
   }
 
   @override
