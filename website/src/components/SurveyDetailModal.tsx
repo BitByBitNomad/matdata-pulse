@@ -56,7 +56,7 @@ export function SurveyDetailModal({
           <div>
             <h3 className="text-base font-bold text-slate-900">{survey.voterFullName}</h3>
             <p className="text-xs text-slate-500 font-mono-num">
-              {survey.assemblyConstituency} · {survey.wardNumber} · rev v{survey.version}
+              {survey.city}, {survey.state} · {survey.assemblyConstituency} · {survey.wardNumber} · rev v{survey.version}
             </p>
           </div>
           <button

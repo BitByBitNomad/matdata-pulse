@@ -24,6 +24,8 @@ export interface Survey {
   age: number;
   gender: Gender;
   mobileNumber: string;
+  state: string;
+  city: string;
   assemblyConstituency: string;
   wardNumber: string;
   priorityCivicIssue: CivicIssue;
@@ -61,6 +63,8 @@ export interface AnalyticsSummary {
     count: number;
     percentage: number;
   }>;
+  states: string[];
+  cities: string[];
   constituencies: string[];
   wards: string[];
   generatedAt: string;
@@ -80,6 +84,8 @@ export interface SurveyAuditLog {
 export interface SurveyFilters {
   page: number;
   limit: number;
+  state?: string;
+  city?: string;
   constituency?: string;
   ward?: string;
   sentiment?: SentimentRating | '';

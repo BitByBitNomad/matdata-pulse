@@ -31,6 +31,8 @@ function DashboardContent() {
   const [filters, setFilters] = useState<SurveyFilters>({
     page: 1,
     limit: 15,
+    state: '',
+    city: '',
     constituency: '',
     ward: '',
     sentiment: '',
@@ -58,6 +60,8 @@ function DashboardContent() {
     setLoadingAnalytics(true);
     try {
       const summary = await surveyApi.analytics({
+        state: filters.state || undefined,
+        city: filters.city || undefined,
         constituency: filters.constituency || undefined,
         ward: filters.ward || undefined,
       });
@@ -70,7 +74,7 @@ function DashboardContent() {
     } finally {
       setLoadingAnalytics(false);
     }
-  }, [user, filters.constituency, filters.ward]);
+  }, [user, filters.state, filters.city, filters.constituency, filters.ward]);
 
   const fetchSurveys = useCallback(async () => {
     if (!user) return;
@@ -92,6 +96,8 @@ function DashboardContent() {
     user,
     filters.page,
     filters.limit,
+    filters.state,
+    filters.city,
     filters.constituency,
     filters.ward,
     filters.sentiment,
@@ -203,6 +209,8 @@ function DashboardContent() {
         surveys={surveys}
         pagination={pagination}
         filters={filters}
+        states={analytics?.states ?? []}
+        cities={analytics?.cities ?? []}
         constituencies={analytics?.constituencies ?? []}
         wards={analytics?.wards ?? []}
         loading={loadingSurveys}

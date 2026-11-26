@@ -22,6 +22,8 @@ interface SurveyTableProps {
   surveys: Survey[];
   pagination: PaginationMeta;
   filters: SurveyFilters;
+  states: string[];
+  cities: string[];
   constituencies: string[];
   wards: string[];
   loading: boolean;
@@ -69,6 +71,8 @@ export function SurveyTable({
   surveys,
   pagination,
   filters,
+  states,
+  cities,
   constituencies,
   wards,
   loading,
@@ -79,6 +83,8 @@ export function SurveyTable({
 }: SurveyTableProps) {
   const hasActiveFilters = Boolean(
     filters.search ||
+      filters.state ||
+      filters.city ||
       filters.constituency ||
       filters.ward ||
       filters.sentiment ||
@@ -90,6 +96,8 @@ export function SurveyTable({
     onFiltersChange({
       page: 1,
       search: '',
+      state: '',
+      city: '',
       constituency: '',
       ward: '',
       sentiment: '',
@@ -124,7 +132,7 @@ export function SurveyTable({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-2.5">
           <div className="relative lg:col-span-2">
             <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -135,6 +143,32 @@ export function SurveyTable({
               className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
             />
           </div>
+
+          <select
+            value={filters.state ?? ''}
+            onChange={(e) => onFiltersChange({ state: e.target.value, page: 1 })}
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+          >
+            <option value="">All States</option>
+            {states.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filters.city ?? ''}
+            onChange={(e) => onFiltersChange({ city: e.target.value, page: 1 })}
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+          >
+            <option value="">All Cities</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
           <select
             value={filters.constituency ?? ''}
@@ -292,7 +326,9 @@ export function SurveyTable({
                       <div className="font-medium text-slate-800">
                         {survey.assemblyConstituency}
                       </div>
-                      <div className="text-xs text-slate-500">{survey.wardNumber}</div>
+                      <div className="text-xs text-slate-500">
+                        {survey.wardNumber} · {survey.city}, {survey.state}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">

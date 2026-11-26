@@ -17,6 +17,8 @@ export const surveyApi = {
       page: filters.page,
       limit: filters.limit,
     };
+    if (filters.state) params.state = filters.state;
+    if (filters.city) params.city = filters.city;
     if (filters.constituency) params.constituency = filters.constituency;
     if (filters.ward) params.ward = filters.ward;
     if (filters.sentiment) params.sentiment = filters.sentiment;
@@ -36,8 +38,15 @@ export const surveyApi = {
     };
   },
 
-  async analytics(filters?: { constituency?: string; ward?: string }): Promise<AnalyticsSummary> {
+  async analytics(filters?: {
+    state?: string;
+    city?: string;
+    constituency?: string;
+    ward?: string;
+  }): Promise<AnalyticsSummary> {
     const params: Record<string, string> = {};
+    if (filters?.state) params.state = filters.state;
+    if (filters?.city) params.city = filters.city;
     if (filters?.constituency) params.constituency = filters.constituency;
     if (filters?.ward) params.ward = filters.ward;
 
