@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS surveys (
   age INTEGER NOT NULL CHECK (age >= 18 AND age <= 120),
   gender VARCHAR(20) NOT NULL CHECK (gender IN ('Male', 'Female', 'Other')),
   mobile_number VARCHAR(10) NOT NULL CHECK (mobile_number ~ '^\d{10}$'),
+  state VARCHAR(80) NOT NULL DEFAULT 'Maharashtra',
+  city VARCHAR(80) NOT NULL DEFAULT 'Pune',
   assembly_constituency VARCHAR(120) NOT NULL,
   ward_number VARCHAR(40) NOT NULL,
   priority_civic_issue VARCHAR(40) NOT NULL CHECK (
@@ -64,7 +66,14 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Safe idempotent column additions for existing databases
+ALTER TABLE surveys ADD COLUMN IF NOT EXISTS state VARCHAR(80) NOT NULL DEFAULT 'Maharashtra';
+ALTER TABLE surveys ADD COLUMN IF NOT EXISTS city VARCHAR(80) NOT NULL DEFAULT 'Pune';
+
 -- Performance indexes for filtering, analytics, and audit queries
+CREATE INDEX IF NOT EXISTS idx_surveys_state_city_ac
+  ON surveys (state, city, assembly_constituency);
+
 CREATE INDEX IF NOT EXISTS idx_surveys_constituency_ward
   ON surveys (assembly_constituency, ward_number);
 

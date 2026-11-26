@@ -41,6 +41,8 @@ export const surveyController = {
   async analytics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const filters = (req.validatedQuery ?? req.query) as {
+        state?: string;
+        city?: string;
         constituency?: string;
         ward?: string;
       };

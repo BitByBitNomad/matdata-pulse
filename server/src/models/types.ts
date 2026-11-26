@@ -57,6 +57,8 @@ export interface SurveyEntity {
   age: number;
   gender: Gender;
   mobile_number: string;
+  state: string;
+  city: string;
   assembly_constituency: string;
   ward_number: string;
   priority_civic_issue: CivicIssue;
@@ -82,6 +84,8 @@ export interface SurveyDTO {
   age: number;
   gender: Gender;
   mobileNumber: string;
+  state: string;
+  city: string;
   assemblyConstituency: string;
   wardNumber: string;
   priorityCivicIssue: CivicIssue;
@@ -102,6 +106,8 @@ export interface SurveyInput {
   age: number;
   gender: Gender;
   mobileNumber: string;
+  state: string;
+  city: string;
   assemblyConstituency: string;
   wardNumber: string;
   priorityCivicIssue: CivicIssue;
@@ -113,6 +119,8 @@ export interface SurveyInput {
 export interface SurveyQueryFilters {
   page: number;
   limit: number;
+  state?: string;
+  city?: string;
   constituency?: string;
   ward?: string;
   sentiment?: SentimentRating;
@@ -138,6 +146,8 @@ export interface AnalyticsSummary {
     count: number;
     percentage: number;
   }>;
+  states: string[];
+  cities: string[];
   constituencies: string[];
   wards: string[];
   generatedAt: string;

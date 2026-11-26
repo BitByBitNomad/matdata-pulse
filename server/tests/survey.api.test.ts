@@ -124,6 +124,32 @@ describe('Matdata Pulse Backend API', () => {
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
+  it('rejects invalid assembly constituency and out-of-range ward number via Zod', async () => {
+    const { token } = makeToken('field_worker');
+    const res = await request(app)
+      .post('/api/surveys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('x-test-bypass-ratelimit', '1')
+      .send({
+        voterFullName: 'Rajeshwari Deshpande',
+        age: 42,
+        gender: 'Female',
+        mobileNumber: '9823011223',
+        state: 'Maharashtra',
+        city: 'Pune',
+        assemblyConstituency: '12345',
+        wardNumber: 'Ward 999',
+        priorityCivicIssue: 'Water',
+        sentimentRating: 'Positive',
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    const paths = (res.body.error.details as Array<{ path: string }>).map((d) => d.path);
+    expect(paths.some((p) => p.includes('assemblyConstituency'))).toBe(true);
+    expect(paths.some((p) => p.includes('wardNumber'))).toBe(true);
+  });
+
   it('ingests a batch array of surveys idempotently inside a transaction', async () => {
     const { token } = makeToken('field_worker');
     const clientId1 = crypto.randomUUID();
@@ -144,6 +170,8 @@ describe('Matdata Pulse Backend API', () => {
             age: 42,
             gender: 'Female',
             mobile_number: '9823011223',
+            state: 'Maharashtra',
+            city: 'Pune',
             assembly_constituency: 'Shivajinagar',
             ward_number: 'Ward 14',
             priority_civic_issue: 'Water',
@@ -176,7 +204,7 @@ describe('Matdata Pulse Backend API', () => {
           gender: 'Female',
           mobileNumber: '9823011223',
           assemblyConstituency: 'Shivajinagar',
-          wardNumber: 'Ward 14',
+          wardNumber: '14',
           priorityCivicIssue: 'Water',
           sentimentRating: 'Positive',
           surveyorNotes: 'Good pressure',
@@ -198,6 +226,10 @@ describe('Matdata Pulse Backend API', () => {
     expect(res.body.data.insertedCount).toBe(1);
     expect(res.body.data.skippedDuplicates).toBe(1);
     expect(res.body.data.syncedClientIds).toEqual([clientId1, clientId2]);
+    // Verify wardNumber normalized to "Ward 14" and default state/city attached
+    expect(mockClientQuery.mock.calls[1][1]).toContain('Ward 14');
+    expect(mockClientQuery.mock.calls[1][1]).toContain('Maharashtra');
+    expect(mockClientQuery.mock.calls[1][1]).toContain('Pune');
   });
 
   it('scopes GET /api/surveys to collector_id for field_worker', async () => {
@@ -312,7 +344,14 @@ describe('Matdata Pulse Backend API', () => {
         ],
       })
       .mockResolvedValueOnce({
-        rows: [{ constituencies: ['Kothrud', 'Shivajinagar'], wards: ['Ward 08', 'Ward 14'] }],
+        rows: [
+          {
+            states: ['Maharashtra'],
+            cities: ['Pune'],
+            constituencies: ['Kothrud', 'Shivajinagar'],
+            wards: ['Ward 08', 'Ward 14'],
+          },
+        ],
       });
 
     const res = await request(app)

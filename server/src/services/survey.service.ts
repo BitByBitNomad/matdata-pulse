@@ -43,11 +43,11 @@ export const surveyService = {
   },
 
   async getAnalytics(
-    filters: { constituency?: string; ward?: string },
+    filters: { state?: string; city?: string; constituency?: string; ward?: string },
     requester: { id: string; role: UserRole }
   ): Promise<AnalyticsSummary> {
     const scope = requester.role === 'field_worker' ? `worker:${requester.id}` : 'admin';
-    const cacheKey = `analytics:${scope}:${filters.constituency || 'all'}:${filters.ward || 'all'}`;
+    const cacheKey = `analytics:${scope}:${filters.state || 'all'}:${filters.city || 'all'}:${filters.constituency || 'all'}:${filters.ward || 'all'}`;
 
     const cached = await redisManager.getJson<AnalyticsSummary>(cacheKey);
     if (cached) {
@@ -55,6 +55,8 @@ export const surveyService = {
     }
 
     const summary = await surveyRepository.getAnalytics({
+      state: filters.state,
+      city: filters.city,
       constituency: filters.constituency,
       ward: filters.ward,
       collectorId: requester.role === 'field_worker' ? requester.id : undefined,

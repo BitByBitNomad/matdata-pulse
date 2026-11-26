@@ -199,10 +199,10 @@ export async function seedDatabase(): Promise<void> {
       await client.query(
         `INSERT INTO surveys (
            client_survey_id, collector_id, voter_full_name, age, gender,
-           mobile_number, assembly_constituency, ward_number, priority_civic_issue,
+           mobile_number, state, city, assembly_constituency, ward_number, priority_civic_issue,
            sentiment_rating, surveyor_notes, audit_status, reviewed_by, reviewed_at, collected_at
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
          ON CONFLICT (collector_id, client_survey_id) DO NOTHING`,
         [
           deterministicClientId,
@@ -211,6 +211,8 @@ export async function seedDatabase(): Promise<void> {
           s.age,
           s.gender,
           s.mobileNumber,
+          'Maharashtra',
+          'Pune',
           s.assemblyConstituency,
           s.wardNumber,
           s.priorityCivicIssue,

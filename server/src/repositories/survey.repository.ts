@@ -21,6 +21,8 @@ export function toSurveyDTO(row: SurveyEntity): SurveyDTO {
     age: row.age,
     gender: row.gender,
     mobileNumber: row.mobile_number,
+    state: row.state,
+    city: row.city,
     assemblyConstituency: row.assembly_constituency,
     wardNumber: row.ward_number,
     priorityCivicIssue: row.priority_civic_issue,
@@ -45,6 +47,8 @@ const SURVEY_SELECT_FIELDS = `
   s.age,
   s.gender,
   s.mobile_number,
+  s.state,
+  s.city,
   s.assembly_constituency,
   s.ward_number,
   s.priority_civic_issue,
@@ -87,10 +91,10 @@ export const surveyRepository = {
         const insertRes = await client.query<{ id: string }>(
           `INSERT INTO surveys (
              client_survey_id, collector_id, voter_full_name, age, gender,
-             mobile_number, assembly_constituency, ward_number, priority_civic_issue,
-             sentiment_rating, surveyor_notes, collected_at, synced_at
+             mobile_number, state, city, assembly_constituency, ward_number,
+             priority_civic_issue, sentiment_rating, surveyor_notes, collected_at, synced_at
            )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
            ON CONFLICT (collector_id, client_survey_id) DO NOTHING
            RETURNING id`,
           [
@@ -100,6 +104,8 @@ export const surveyRepository = {
             item.age,
             item.gender,
             item.mobileNumber,
+            item.state ?? 'Maharashtra',
+            item.city ?? 'Pune',
             item.assemblyConstituency,
             item.wardNumber,
             item.priorityCivicIssue,
@@ -149,6 +155,12 @@ export const surveyRepository = {
     if (filters.collectorId) {
       conditions.push(`s.collector_id = ${addParam(filters.collectorId)}`);
     }
+    if (filters.state) {
+      conditions.push(`LOWER(s.state) = LOWER(${addParam(filters.state)})`);
+    }
+    if (filters.city) {
+      conditions.push(`LOWER(s.city) = LOWER(${addParam(filters.city)})`);
+    }
     if (filters.constituency) {
       conditions.push(`LOWER(s.assembly_constituency) = LOWER(${addParam(filters.constituency)})`);
     }
@@ -168,7 +180,7 @@ export const surveyRepository = {
       const pattern = `%${filters.search}%`;
       const p1 = addParam(pattern);
       conditions.push(
-        `(s.voter_full_name ILIKE ${p1} OR s.ward_number ILIKE ${p1} OR s.assembly_constituency ILIKE ${p1} OR s.mobile_number ILIKE ${p1})`
+        `(s.voter_full_name ILIKE ${p1} OR s.ward_number ILIKE ${p1} OR s.assembly_constituency ILIKE ${p1} OR s.city ILIKE ${p1} OR s.state ILIKE ${p1} OR s.mobile_number ILIKE ${p1})`
       );
     }
 
@@ -204,6 +216,8 @@ export const surveyRepository = {
   },
 
   async getAnalytics(filters: {
+    state?: string;
+    city?: string;
     constituency?: string;
     ward?: string;
     collectorId?: string;
@@ -218,6 +232,12 @@ export const surveyRepository = {
 
     if (filters.collectorId) {
       conditions.push(`collector_id = ${addParam(filters.collectorId)}`);
+    }
+    if (filters.state) {
+      conditions.push(`LOWER(state) = LOWER(${addParam(filters.state)})`);
+    }
+    if (filters.city) {
+      conditions.push(`LOWER(city) = LOWER(${addParam(filters.city)})`);
     }
     if (filters.constituency) {
       conditions.push(`LOWER(assembly_constituency) = LOWER(${addParam(filters.constituency)})`);
@@ -262,8 +282,15 @@ export const surveyRepository = {
       params
     );
 
-    const facetsRes = await query<{ constituencies: string[] | null; wards: string[] | null }>(
+    const facetsRes = await query<{
+      states: string[] | null;
+      cities: string[] | null;
+      constituencies: string[] | null;
+      wards: string[] | null;
+    }>(
       `SELECT
+         ARRAY(SELECT DISTINCT state FROM surveys ORDER BY state) AS states,
+         ARRAY(SELECT DISTINCT city FROM surveys ORDER BY city) AS cities,
          ARRAY(SELECT DISTINCT assembly_constituency FROM surveys ORDER BY assembly_constituency) AS constituencies,
          ARRAY(SELECT DISTINCT ward_number FROM surveys ORDER BY ward_number) AS wards`
     );
@@ -296,6 +323,8 @@ export const surveyRepository = {
           percentage: pct(c),
         };
       }),
+      states: facetsRes.rows[0]?.states ?? [],
+      cities: facetsRes.rows[0]?.cities ?? [],
       constituencies: facetsRes.rows[0]?.constituencies ?? [],
       wards: facetsRes.rows[0]?.wards ?? [],
       generatedAt: new Date().toISOString(),
