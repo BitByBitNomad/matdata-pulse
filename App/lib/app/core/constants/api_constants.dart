@@ -2,14 +2,15 @@ class ApiConstants {
   ApiConstants._();
 
   /// Override at build time with:
-  /// `flutter run --dart-define=API_BASE_URL=http://192.168.1.10:5000/api`
+  /// `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api`
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:5000/api',
+    defaultValue: 'https://matdata-pulse.onrender.com/api',
   );
 
-  static const Duration connectTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  // 45s accommodates cloud free-tier cold starts (e.g., Render) cleanly
+  static const Duration connectTimeout = Duration(seconds: 45);
+  static const Duration receiveTimeout = Duration(seconds: 45);
 
   static const String loginEndpoint = '/auth/login';
   static const String refreshEndpoint = '/auth/refresh';
