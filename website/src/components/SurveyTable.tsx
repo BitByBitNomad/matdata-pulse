@@ -31,17 +31,38 @@ interface SurveyTableProps {
   onSelectSurvey: (survey: Survey) => void;
 }
 
-const SENTIMENT_BADGE: Record<SentimentRating, string> = {
-  Positive: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Neutral: 'bg-slate-100 text-slate-700 border-slate-200',
-  Negative: 'bg-rose-50 text-rose-700 border-rose-200',
+const SENTIMENT_STYLE: Record<SentimentRating, { pill: string; dot: string }> = {
+  Positive: {
+    pill: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+    dot: 'bg-emerald-600',
+  },
+  Neutral: {
+    pill: 'bg-slate-100 text-slate-700 border-slate-200',
+    dot: 'bg-slate-500',
+  },
+  Negative: {
+    pill: 'bg-rose-50 text-rose-800 border-rose-200/80',
+    dot: 'bg-rose-600',
+  },
 };
 
-const AUDIT_BADGE: Record<AuditStatus, string> = {
-  Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  Verified: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Flagged: 'bg-rose-50 text-rose-700 border-rose-200',
-  Duplicate: 'bg-purple-50 text-purple-700 border-purple-200',
+const AUDIT_STYLE: Record<AuditStatus, { pill: string; dot: string }> = {
+  Pending: {
+    pill: 'bg-amber-50 text-amber-800 border-amber-200/80',
+    dot: 'bg-amber-500',
+  },
+  Verified: {
+    pill: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+    dot: 'bg-emerald-600',
+  },
+  Flagged: {
+    pill: 'bg-rose-50 text-rose-800 border-rose-200/80',
+    dot: 'bg-rose-600',
+  },
+  Duplicate: {
+    pill: 'bg-slate-100 text-slate-700 border-slate-300',
+    dot: 'bg-slate-600',
+  },
 };
 
 export function SurveyTable({
@@ -78,25 +99,27 @@ export function SurveyTable({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-      <div className="p-4 sm:p-5 border-b border-slate-200 space-y-3">
+    <div
+      className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden animate-fade-up"
+      style={{ animationDelay: '260ms' }}
+    >
+      <div className="p-4 sm:p-5 border-b border-slate-200 space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              Field Survey Submissions
-            </h3>
-            <p className="text-xs text-slate-500">
-              Showing {surveys.length} of {pagination.total} synced voter records
+            <h3 className="text-sm font-bold text-slate-900">Survey Audit Ledger</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Showing <span className="font-mono-num font-semibold text-slate-700">{surveys.length}</span> of{' '}
+              <span className="font-mono-num font-semibold text-slate-700">{pagination.total}</span> records
             </p>
           </div>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={resetFilters}
-              className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-900 cursor-pointer transition"
             >
               <X className="h-3.5 w-3.5" />
-              Clear all filters
+              Reset filters
             </button>
           )}
         </div>
@@ -109,14 +132,14 @@ export function SurveyTable({
               value={filters.search ?? ''}
               onChange={(e) => onFiltersChange({ search: e.target.value, page: 1 })}
               placeholder="Search voter name, ward, or mobile..."
-              className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
             />
           </div>
 
           <select
             value={filters.constituency ?? ''}
             onChange={(e) => onFiltersChange({ constituency: e.target.value, page: 1 })}
-            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
           >
             <option value="">All Constituencies</option>
             {constituencies.map((c) => (
@@ -129,7 +152,7 @@ export function SurveyTable({
           <select
             value={filters.ward ?? ''}
             onChange={(e) => onFiltersChange({ ward: e.target.value, page: 1 })}
-            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
           >
             <option value="">All Wards</option>
             {wards.map((w) => (
@@ -147,7 +170,7 @@ export function SurveyTable({
                 page: 1,
               })
             }
-            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
           >
             <option value="">All Sentiments</option>
             <option value="Positive">Positive</option>
@@ -163,7 +186,7 @@ export function SurveyTable({
                 page: 1,
               })
             }
-            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
           >
             <option value="">All Audit Status</option>
             <option value="Pending">Pending</option>
@@ -174,7 +197,7 @@ export function SurveyTable({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs text-slate-500 mr-1">Civic Issue:</span>
+          <span className="text-[11px] font-semibold text-slate-500 mr-1">Issue:</span>
           {(['', 'Water', 'Roads', 'Electricity', 'Healthcare', 'Employment'] as const).map(
             (issueOption) => {
               const active = (filters.issue ?? '') === issueOption;
@@ -185,13 +208,13 @@ export function SurveyTable({
                   onClick={() =>
                     onFiltersChange({ issue: issueOption as CivicIssue | '', page: 1 })
                   }
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
                     active
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-[#0B132B] text-white'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
-                  {issueOption || 'All Issues'}
+                  {issueOption || 'All'}
                 </button>
               );
             }
@@ -202,14 +225,14 @@ export function SurveyTable({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <tr className="bg-slate-50/90 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <th className="py-3 px-4">Voter</th>
               <th className="py-3 px-4">Constituency & Ward</th>
-              <th className="py-3 px-4">Civic Issue</th>
+              <th className="py-3 px-4">Priority Issue</th>
               <th className="py-3 px-4">Sentiment</th>
               <th className="py-3 px-4">Collector</th>
               <th className="py-3 px-4">Audit Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3 px-4 text-right">Review Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
@@ -243,23 +266,26 @@ export function SurveyTable({
             ) : surveys.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-sm text-slate-500">
-                  No survey submissions match the current filters.
+                  No survey records match the active filters.
                 </td>
               </tr>
             ) : (
               surveys.map((survey) => {
                 const isUpdating = updatingId === survey.id;
+                const sStyle = SENTIMENT_STYLE[survey.sentimentRating];
+                const aStyle = AUDIT_STYLE[survey.auditStatus];
+
                 return (
                   <tr
                     key={survey.id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    className="hover:bg-slate-50/90 transition-colors"
                   >
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-slate-900">
                         {survey.voterFullName}
                       </div>
-                      <div className="text-xs text-slate-500">
-                        {survey.age} yrs · {survey.gender} · {survey.mobileNumber}
+                      <div className="text-xs text-slate-500 font-mono-num">
+                        {survey.age}y · {survey.gender} · {survey.mobileNumber}
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
@@ -269,22 +295,23 @@ export function SurveyTable({
                       <div className="text-xs text-slate-500">{survey.wardNumber}</div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
                         {survey.priorityCivicIssue}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${SENTIMENT_BADGE[survey.sentimentRating]}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${sStyle.pill}`}
                       >
+                        <span className={`h-1.5 w-1.5 rounded-full ${sStyle.dot}`} />
                         {survey.sentimentRating}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="text-xs font-medium text-slate-700">
+                      <div className="text-xs font-medium text-slate-800">
                         {survey.collectorName || 'Field Collector'}
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-[11px] text-slate-400 font-mono-num">
                         {new Date(survey.collectedAt).toLocaleDateString('en-IN', {
                           day: '2-digit',
                           month: 'short',
@@ -295,8 +322,9 @@ export function SurveyTable({
                     </td>
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIT_BADGE[survey.auditStatus]}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${aStyle.pill}`}
                       >
+                        <span className={`h-1.5 w-1.5 rounded-full ${aStyle.dot}`} />
                         {survey.auditStatus}
                       </span>
                     </td>
@@ -307,16 +335,17 @@ export function SurveyTable({
                           disabled={isUpdating || survey.auditStatus === 'Verified'}
                           onClick={() => onStatusUpdate(survey.id, 'Verified')}
                           title="Verify Survey"
-                          className="p-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
                         >
-                          <Check className="h-3.5 w-3.5" />
+                          <Check className="h-3 w-3" />
+                          Verify
                         </button>
                         <button
                           type="button"
                           disabled={isUpdating || survey.auditStatus === 'Flagged'}
                           onClick={() => onStatusUpdate(survey.id, 'Flagged')}
                           title="Flag Survey"
-                          className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
+                          className="p-1.5 rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
                         >
                           <Flag className="h-3.5 w-3.5" />
                         </button>
@@ -325,7 +354,7 @@ export function SurveyTable({
                           disabled={isUpdating || survey.auditStatus === 'Duplicate'}
                           onClick={() => onStatusUpdate(survey.id, 'Duplicate')}
                           title="Mark Duplicate"
-                          className="p-1.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
+                          className="p-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
                         >
                           <CopyX className="h-3.5 w-3.5" />
                         </button>
@@ -333,7 +362,7 @@ export function SurveyTable({
                           type="button"
                           onClick={() => onSelectSurvey(survey)}
                           title="Inspect Details & Audit History"
-                          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 cursor-pointer transition"
+                          className="p-1.5 rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 cursor-pointer transition"
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </button>
@@ -347,18 +376,18 @@ export function SurveyTable({
         </table>
       </div>
 
-      <div className="px-4 sm:px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600">
+      <div className="px-4 sm:px-5 py-3 border-t border-slate-200 bg-slate-50/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600">
         <span>
-          Page <strong className="text-slate-900">{pagination.page}</strong> of{' '}
-          <strong className="text-slate-900">{pagination.totalPages}</strong> (
-          {pagination.total} records)
+          Page <strong className="text-slate-900 font-mono-num">{pagination.page}</strong> of{' '}
+          <strong className="text-slate-900 font-mono-num">{pagination.totalPages}</strong> (
+          <span className="font-mono-num">{pagination.total}</span> records)
         </span>
         <div className="flex items-center gap-2">
           <button
             type="button"
             disabled={pagination.page <= 1 || loading}
             onClick={() => onFiltersChange({ page: pagination.page - 1 })}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             Prev
@@ -367,7 +396,7 @@ export function SurveyTable({
             type="button"
             disabled={pagination.page >= pagination.totalPages || loading}
             onClick={() => onFiltersChange({ page: pagination.page + 1 })}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
           >
             Next
             <ChevronRight className="h-3.5 w-3.5" />

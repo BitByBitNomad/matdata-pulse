@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { extractErrorMessage } from './api/client';
 import { surveyApi } from './api/surveyApi';
 import { AnalyticsPanel } from './components/AnalyticsPanel';
@@ -45,6 +45,7 @@ function DashboardContent() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
 
   useEffect(() => {
@@ -61,6 +62,9 @@ function DashboardContent() {
         ward: filters.ward || undefined,
       });
       setAnalytics(summary);
+      setLastUpdated(
+        new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      );
     } catch (err) {
       setErrorBanner(extractErrorMessage(err, 'Failed to load analytics'));
     } finally {
@@ -133,7 +137,7 @@ function DashboardContent() {
 
   if (authLoading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[#F6F7FB] text-slate-600 text-sm">
         Restoring campaign session...
       </div>
     );
@@ -147,6 +151,7 @@ function DashboardContent() {
     <Layout
       user={user}
       refreshing={loadingAnalytics || loadingSurveys}
+      lastUpdated={lastUpdated}
       onRefresh={() => {
         void fetchAnalytics();
         void fetchSurveys();
@@ -154,7 +159,7 @@ function DashboardContent() {
       onLogout={() => void logout()}
     >
       {errorBanner && (
-        <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 flex items-center justify-between gap-3 text-sm text-rose-800">
+        <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 flex items-center justify-between gap-3 text-sm text-rose-800 animate-fade-up">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorBanner}</span>
@@ -173,10 +178,22 @@ function DashboardContent() {
       )}
 
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg border border-slate-700">
-          {toast}
+        <div className="fixed bottom-5 right-5 z-50 bg-[#0B132B] text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-xl border border-slate-700 inline-flex items-center gap-2 animate-toast-in">
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+          <span>{toast}</span>
         </div>
       )}
+
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 animate-fade-up">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+            Campaign Telemetry Overview
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Live voter feedback metrics and field verification pipeline
+          </p>
+        </div>
+      </div>
 
       <KpiCards analytics={analytics} loading={loadingAnalytics} />
 

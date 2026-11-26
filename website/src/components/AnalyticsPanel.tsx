@@ -1,4 +1,3 @@
-import { AlertTriangle, BarChart3 } from 'lucide-react';
 import { AnalyticsSummary } from '../types/survey';
 
 interface AnalyticsPanelProps {
@@ -10,8 +9,8 @@ export function AnalyticsPanel({ analytics, loading }: AnalyticsPanelProps) {
   if (loading && !analytics) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 h-48 animate-pulse" />
-        <div className="bg-white rounded-xl border border-slate-200 p-5 h-48 animate-pulse" />
+        <div className="bg-white rounded-xl border border-slate-200/90 p-5 h-52 animate-pulse" />
+        <div className="bg-white rounded-xl border border-slate-200/90 p-5 h-52 animate-pulse" />
       </div>
     );
   }
@@ -23,86 +22,118 @@ export function AnalyticsPanel({ analytics, loading }: AnalyticsPanelProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+      <div
+        className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs animate-fade-up"
+        style={{ animationDelay: '160ms' }}
+      >
+        <div className="flex items-baseline justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Voter Sentiment Breakdown</h3>
-            <p className="text-xs text-slate-500">Real-time mood across synced booth surveys</p>
+            <h3 className="text-sm font-bold text-slate-900">Voter Sentiment Distribution</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Aggregated mood across captured household responses
+            </p>
           </div>
-          <BarChart3 className="h-4 w-4 text-slate-400" />
+          <span className="text-[11px] font-medium text-slate-400 font-mono-num">
+            N = {analytics?.totalSurveys ?? 0}
+          </span>
         </div>
 
-        <div className="h-3.5 w-full rounded-full bg-slate-100 overflow-hidden flex mb-5">
+        <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden flex mb-5">
           <div
             style={{ width: `${pos.percentage}%` }}
-            className="bg-emerald-500 transition-all duration-300"
+            className="bg-emerald-600 transition-all duration-500 ease-out"
             title={`Positive: ${pos.percentage}%`}
           />
           <div
             style={{ width: `${neu.percentage}%` }}
-            className="bg-slate-400 transition-all duration-300"
+            className="bg-slate-400 transition-all duration-500 ease-out"
             title={`Neutral: ${neu.percentage}%`}
           />
           <div
             style={{ width: `${neg.percentage}%` }}
-            className="bg-rose-500 transition-all duration-300"
+            className="bg-rose-600 transition-all duration-500 ease-out"
             title={`Negative: ${neg.percentage}%`}
           />
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg bg-emerald-50/70 border border-emerald-100 p-3">
-            <span className="text-xs font-medium text-emerald-800">Positive</span>
-            <p className="text-lg font-bold text-emerald-900 mt-0.5">{pos.percentage}%</p>
-            <p className="text-[11px] text-emerald-700">{pos.count} voters</p>
+          <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-600" />
+              <span className="text-xs font-semibold text-slate-700">Positive</span>
+            </div>
+            <p className="text-xl font-bold text-slate-900 mt-1 font-mono-num">
+              {pos.percentage}%
+            </p>
+            <p className="text-[11px] text-slate-500 font-mono-num">{pos.count} voters</p>
           </div>
-          <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
-            <span className="text-xs font-medium text-slate-700">Neutral</span>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{neu.percentage}%</p>
-            <p className="text-[11px] text-slate-600">{neu.count} voters</p>
+
+          <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-slate-400" />
+              <span className="text-xs font-semibold text-slate-700">Neutral</span>
+            </div>
+            <p className="text-xl font-bold text-slate-900 mt-1 font-mono-num">
+              {neu.percentage}%
+            </p>
+            <p className="text-[11px] text-slate-500 font-mono-num">{neu.count} voters</p>
           </div>
-          <div className="rounded-lg bg-rose-50/70 border border-rose-100 p-3">
-            <span className="text-xs font-medium text-rose-800">Negative</span>
-            <p className="text-lg font-bold text-rose-900 mt-0.5">{neg.percentage}%</p>
-            <p className="text-[11px] text-rose-700">{neg.count} voters</p>
+
+          <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-rose-600" />
+              <span className="text-xs font-semibold text-slate-700">Negative</span>
+            </div>
+            <p className="text-xl font-bold text-slate-900 mt-1 font-mono-num">
+              {neg.percentage}%
+            </p>
+            <p className="text-[11px] text-slate-500 font-mono-num">{neg.count} voters</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+      <div
+        className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs animate-fade-up"
+        style={{ animationDelay: '220ms' }}
+      >
+        <div className="flex items-baseline justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Top 3 Reported Civic Issues</h3>
-            <p className="text-xs text-slate-500">Highest citizen priority concerns in field data</p>
+            <h3 className="text-sm font-bold text-slate-900">Top 3 Priority Civic Issues</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Most frequently escalated concerns by citizens
+            </p>
           </div>
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <span className="text-[11px] font-medium text-slate-400">Ranked</span>
         </div>
 
         {topIssues.length === 0 ? (
-          <div className="text-sm text-slate-500 py-8 text-center">
-            No civic issue data available yet for the selected filters.
+          <div className="text-xs text-slate-500 py-10 text-center">
+            No civic issue data matches the current scope.
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             {topIssues.map((item, idx) => (
               <div key={item.issue}>
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-semibold text-slate-800">
-                    #{idx + 1} {item.issue}
+                  <span className="font-semibold text-slate-800 flex items-center gap-2">
+                    <span className="h-5 w-5 rounded bg-slate-100 text-slate-700 font-mono-num text-[11px] inline-flex items-center justify-center font-bold">
+                      {idx + 1}
+                    </span>
+                    {item.issue}
                   </span>
-                  <span className="text-slate-600 tabular-nums">
-                    {item.count} mentions ({item.percentage}%)
+                  <span className="text-slate-600 font-mono-num">
+                    {item.count} ({item.percentage}%)
                   </span>
                 </div>
-                <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
                     style={{ width: `${Math.min(100, item.percentage)}%` }}
-                    className={`h-full rounded-full transition-all duration-300 ${
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
                       idx === 0
-                        ? 'bg-indigo-600'
+                        ? 'bg-blue-700'
                         : idx === 1
-                          ? 'bg-amber-500'
-                          : 'bg-teal-500'
+                          ? 'bg-slate-700'
+                          : 'bg-amber-600'
                     }`}
                   />
                 </div>
