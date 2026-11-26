@@ -2,11 +2,17 @@ import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 
+const isLocalDatabase =
+  env.DATABASE_URL.includes('localhost') ||
+  env.DATABASE_URL.includes('127.0.0.1') ||
+  env.DATABASE_URL.includes('@postgres:');
+
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
   max: env.PG_POOL_MAX,
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
+  connectionTimeoutMillis: 10_000,
+  ...(isLocalDatabase ? {} : { ssl: { rejectUnauthorized: false } }),
 });
 
 pool.on('error', (err) => {

@@ -11,10 +11,14 @@ class RedisManager {
       return this.client;
     }
 
+    const useTls =
+      env.REDIS_URL.startsWith('rediss://') || env.REDIS_URL.includes('upstash.io');
+
     this.client = new Redis(env.REDIS_URL, {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
       lazyConnect: true,
+      ...(useTls ? { tls: { rejectUnauthorized: false } } : {}),
       retryStrategy: (times) => Math.min(times * 250, 5_000),
     });
 
