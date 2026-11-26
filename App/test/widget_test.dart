@@ -17,9 +17,6 @@ class _FakeLocalStorageService extends GetxService implements LocalStorageServic
 
 class _FakeApiProvider extends GetxService implements ApiProvider {
   @override
-  String get currentBaseUrl => 'https://matdata-pulse.onrender.com/api';
-
-  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

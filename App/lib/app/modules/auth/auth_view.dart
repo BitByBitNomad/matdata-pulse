@@ -71,11 +71,6 @@ class AuthView extends GetView<AuthController> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          tooltip: 'Configure Backend API URL',
-                          icon: const Icon(Icons.tune_rounded, color: AppTheme.mutedText),
-                          onPressed: () => _showServerUrlDialog(context),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 22),
@@ -210,38 +205,6 @@ class AuthView extends GetView<AuthController> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showServerUrlDialog(BuildContext context) {
-    final urlCtrl = TextEditingController(text: controller.currentServerUrl);
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Backend API Endpoint'),
-        content: TextField(
-          controller: urlCtrl,
-          keyboardType: TextInputType.url,
-          decoration: const InputDecoration(
-            labelText: 'API Base URL',
-            hintText: 'https://your-api.onrender.com/api',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(minimumSize: const Size(90, 40)),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              await controller.saveServerUrl(urlCtrl.text);
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
