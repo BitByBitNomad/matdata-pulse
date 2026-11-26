@@ -10,6 +10,7 @@ class LocalStorageService extends GetxService {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
   static const _userProfileKey = 'user_profile';
+  static const _apiBaseUrlKey = 'api_base_url';
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   late Box<Map<dynamic, dynamic>> _surveysBox;
@@ -74,6 +75,17 @@ class LocalStorageService extends GetxService {
     await _authBox.delete(_refreshTokenKey);
     await _authBox.delete(_userProfileKey);
   }
+
+  Future<void> saveApiBaseUrl(String url) async {
+    final trimmed = url.trim().replaceAll(RegExp(r'/+$'), '');
+    if (trimmed.isEmpty) {
+      await _authBox.delete(_apiBaseUrlKey);
+    } else {
+      await _authBox.put(_apiBaseUrlKey, trimmed);
+    }
+  }
+
+  String? getApiBaseUrl() => _authBox.get(_apiBaseUrlKey);
 
   // --- Offline-First Survey Persistence ---
 

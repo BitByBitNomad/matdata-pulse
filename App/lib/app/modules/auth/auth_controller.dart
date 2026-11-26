@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/user_model.dart';
+import '../../data/providers/api_provider.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../routes/app_routes.dart';
 
 class AuthController extends GetxController {
   final AuthRepository _authRepo = AuthRepository();
+  final ApiProvider _api = Get.find<ApiProvider>();
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -24,6 +26,18 @@ class AuthController extends GetxController {
   void fillDemoWorker() {
     emailController.text = 'rohan.field@matdatapulse.in';
     passwordController.text = 'Worker@2026!';
+  }
+
+  String get currentServerUrl => _api.currentBaseUrl;
+
+  Future<void> saveServerUrl(String url) async {
+    await _api.updateBaseUrl(url);
+    Get.snackbar(
+      'Server Endpoint Updated',
+      'API URL set to ${_api.currentBaseUrl}',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(12),
+    );
   }
 
   Future<void> login() async {

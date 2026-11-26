@@ -9,9 +9,12 @@ class ApiProvider extends GetxService {
   final LocalStorageService _storage = Get.find<LocalStorageService>();
 
   ApiProvider init() {
+    final savedUrl = _storage.getApiBaseUrl();
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
+        baseUrl: (savedUrl != null && savedUrl.isNotEmpty)
+            ? savedUrl
+            : ApiConstants.baseUrl,
         connectTimeout: ApiConstants.connectTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
         headers: {'Content-Type': 'application/json'},
@@ -58,6 +61,15 @@ class ApiProvider extends GetxService {
     return this;
   }
 
+  String get currentBaseUrl => _dio.options.baseUrl;
+
+  Future<void> updateBaseUrl(String url) async {
+    await _storage.saveApiBaseUrl(url);
+    final saved = _storage.getApiBaseUrl();
+    _dio.options.baseUrl =
+        (saved != null && saved.isNotEmpty) ? saved : ApiConstants.baseUrl;
+  }
+
   Future<bool> _attemptRefresh() async {
     final refreshToken = await _storage.getRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
@@ -65,7 +77,7 @@ class ApiProvider extends GetxService {
     try {
       final refreshDio = Dio(
         BaseOptions(
-          baseUrl: ApiConstants.baseUrl,
+          baseUrl: _dio.options.baseUrl,
           connectTimeout: ApiConstants.connectTimeout,
           receiveTimeout: ApiConstants.receiveTimeout,
         ),
