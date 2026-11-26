@@ -125,6 +125,15 @@ class SubmissionsView extends GetView<SubmissionsController> {
             ],
           ),
         ),
+        Obx(
+          () => controller.isLoadingRemote.value
+              ? const LinearProgressIndicator(
+                  minHeight: 2.5,
+                  color: AppTheme.cobaltAccent,
+                  backgroundColor: Colors.transparent,
+                )
+              : const SizedBox.shrink(),
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: controller.refreshAndSync,
@@ -387,6 +396,15 @@ class _AnimatedSurveyCardState extends State<_AnimatedSurveyCard> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.navyPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Audit Status: ${survey.auditStatus}',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.cobaltAccent,
                             ),
                           ),
                           if (survey.surveyorNotes.isNotEmpty) ...[

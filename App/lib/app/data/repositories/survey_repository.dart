@@ -29,6 +29,45 @@ class SurveyRepository {
 
   List<SurveyModel> loadPendingSurveys() => _storage.getPendingSurveys();
 
+  /// Pulls previously synced surveys for the authenticated worker from `GET /api/surveys`
+  /// and merges them into local Hive storage so multi-device logins show full history.
+  Future<int> fetchRemoteSurveys() async {
+    try {
+      final fetched = <SurveyModel>[];
+      var page = 1;
+      var totalPages = 1;
+      const maxPages = 10;
+
+      while (page <= totalPages && page <= maxPages) {
+        final res = await _api.get(
+          ApiConstants.surveysEndpoint,
+          queryParameters: {'page': page, 'limit': 100},
+        );
+        final rows = (res.data?['data'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>();
+        fetched.addAll(rows.map(SurveyModel.fromApiJson));
+
+        final pagination = res.data?['pagination'] as Map<String, dynamic>?;
+        totalPages = (pagination?['totalPages'] as num?)?.toInt() ?? 1;
+        page += 1;
+      }
+
+      if (fetched.isNotEmpty) {
+        await _storage.upsertRemoteSurveys(fetched);
+      }
+      return fetched.length;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('Server wake-up timed out while loading past surveys.');
+      }
+      if (e.response?.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      throw Exception('Could not fetch remote history. Showing offline cache.');
+    }
+  }
+
   Future<SyncBatchResult> syncPendingSurveys() async {
     final pending = _storage.getPendingSurveys();
     if (pending.isEmpty) {
@@ -65,6 +104,7 @@ class SurveyRepository {
       await _storage.markSurveysSynced(
         clientSurveyIds: syncedIds,
         serverIdByClientId: serverIdByClientId,
+        collectorId: _storage.getSavedUser()?.id,
       );
 
       return SyncBatchResult(

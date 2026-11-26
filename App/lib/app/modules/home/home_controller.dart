@@ -27,7 +27,9 @@ class HomeController extends GetxController {
   void changeTab(int index) {
     currentTabIndex.value = index;
     if (index == 1 && Get.isRegistered<SubmissionsController>()) {
-      Get.find<SubmissionsController>().loadLocalSurveys();
+      final subs = Get.find<SubmissionsController>();
+      subs.loadLocalSurveys();
+      subs.pullRemoteSurveys();
     }
   }
 

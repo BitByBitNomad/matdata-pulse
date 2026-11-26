@@ -3,6 +3,7 @@ import '../../core/constants/app_constants.dart';
 class SurveyModel {
   final String clientSurveyId;
   final String? serverId;
+  final String? collectorId;
   final String voterFullName;
   final int age;
   final String gender;
@@ -22,6 +23,7 @@ class SurveyModel {
   const SurveyModel({
     required this.clientSurveyId,
     this.serverId,
+    this.collectorId,
     required this.voterFullName,
     required this.age,
     required this.gender,
@@ -43,6 +45,7 @@ class SurveyModel {
 
   SurveyModel copyWith({
     String? serverId,
+    String? collectorId,
     String? syncStatus,
     String? auditStatus,
     DateTime? syncedAt,
@@ -50,6 +53,7 @@ class SurveyModel {
     return SurveyModel(
       clientSurveyId: clientSurveyId,
       serverId: serverId ?? this.serverId,
+      collectorId: collectorId ?? this.collectorId,
       voterFullName: voterFullName,
       age: age,
       gender: gender,
@@ -87,10 +91,39 @@ class SurveyModel {
     };
   }
 
+  /// Hydrates a server record from `GET /api/surveys` into local Hive storage.
+  factory SurveyModel.fromApiJson(Map<String, dynamic> json) {
+    final serverId = json['id'] as String?;
+    final clientId = (json['clientSurveyId'] as String?) ?? serverId ?? '';
+    return SurveyModel(
+      clientSurveyId: clientId,
+      serverId: serverId,
+      collectorId: json['collectorId'] as String?,
+      voterFullName: json['voterFullName'] as String,
+      age: (json['age'] as num).toInt(),
+      gender: json['gender'] as String,
+      mobileNumber: json['mobileNumber'] as String,
+      state: (json['state'] as String?) ?? 'Maharashtra',
+      city: (json['city'] as String?) ?? 'Pune',
+      assemblyConstituency: json['assemblyConstituency'] as String,
+      wardNumber: json['wardNumber'] as String,
+      priorityCivicIssue: json['priorityCivicIssue'] as String,
+      sentimentRating: json['sentimentRating'] as String,
+      surveyorNotes: (json['surveyorNotes'] as String?) ?? '',
+      syncStatus: AppConstants.syncStatusSynced,
+      auditStatus: (json['auditStatus'] as String?) ?? 'Pending',
+      collectedAt: DateTime.parse(json['collectedAt'] as String).toLocal(),
+      syncedAt: json['syncedAt'] != null
+          ? DateTime.tryParse(json['syncedAt'] as String)?.toLocal()
+          : DateTime.now(),
+    );
+  }
+
   Map<String, dynamic> toLocalMap() {
     return {
       'clientSurveyId': clientSurveyId,
       'serverId': serverId,
+      'collectorId': collectorId,
       'voterFullName': voterFullName,
       'age': age,
       'gender': gender,
@@ -113,6 +146,7 @@ class SurveyModel {
     return SurveyModel(
       clientSurveyId: map['clientSurveyId'] as String,
       serverId: map['serverId'] as String?,
+      collectorId: map['collectorId'] as String?,
       voterFullName: map['voterFullName'] as String,
       age: (map['age'] as num).toInt(),
       gender: map['gender'] as String,

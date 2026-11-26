@@ -20,6 +20,7 @@ class AuthRepository {
       );
       final data = res.data?['data'] as Map<String, dynamic>;
       final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+      await _storage.clearSyncedSurveysForOtherUsers(user.id);
       await _storage.saveSession(
         accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,
@@ -49,6 +50,7 @@ class AuthRepository {
     } catch (_) {
       // Clear local session even if offline
     } finally {
+      await _storage.clearSyncedSurveys();
       await _storage.clearSession();
     }
   }

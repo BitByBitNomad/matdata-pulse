@@ -73,5 +73,32 @@ void main() {
       expect(apiPayload['priorityCivicIssue'], 'Water');
       expect(apiPayload['sentimentRating'], 'Positive');
     });
+
+    test('hydrates remote survey JSON from GET /api/surveys as Synced', () {
+      final remote = SurveyModel.fromApiJson({
+        'id': '99999999-9999-4999-8999-999999999999',
+        'clientSurveyId': '11111111-1111-4111-8111-111111111111',
+        'collectorId': '22222222-2222-4222-8222-222222222222',
+        'voterFullName': 'Sunita Patwardhan',
+        'age': 61,
+        'gender': 'Female',
+        'mobileNumber': '9765011998',
+        'state': 'Maharashtra',
+        'city': 'Pune',
+        'assemblyConstituency': 'Shivajinagar',
+        'wardNumber': 'Ward 11',
+        'priorityCivicIssue': 'Healthcare',
+        'sentimentRating': 'Positive',
+        'surveyorNotes': 'Verified at clinic',
+        'auditStatus': 'Verified',
+        'collectedAt': '2026-11-26T10:00:00.000Z',
+        'syncedAt': '2026-11-26T10:01:00.000Z',
+      });
+
+      expect(remote.isSynced, isTrue);
+      expect(remote.serverId, '99999999-9999-4999-8999-999999999999');
+      expect(remote.collectorId, '22222222-2222-4222-8222-222222222222');
+      expect(remote.auditStatus, 'Verified');
+    });
   });
 }

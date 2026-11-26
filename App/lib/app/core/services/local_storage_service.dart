@@ -108,6 +108,7 @@ class LocalStorageService extends GetxService {
   Future<void> markSurveysSynced({
     required List<String> clientSurveyIds,
     required Map<String, String> serverIdByClientId,
+    String? collectorId,
   }) async {
     final now = DateTime.now();
     for (final clientId in clientSurveyIds) {
@@ -116,10 +117,57 @@ class LocalStorageService extends GetxService {
       final survey = SurveyModel.fromLocalMap(existingMap);
       final updated = survey.copyWith(
         serverId: serverIdByClientId[clientId] ?? survey.serverId,
+        collectorId: collectorId ?? survey.collectorId,
         syncStatus: AppConstants.syncStatusSynced,
         syncedAt: now,
       );
       await _surveysBox.put(clientId, updated.toLocalMap());
+    }
+  }
+
+  /// Merges remote surveys fetched from `GET /api/surveys` into local Hive storage
+  /// without ever overwriting unsynced local `Pending Sync` entries.
+  Future<void> upsertRemoteSurveys(List<SurveyModel> remoteSurveys) async {
+    for (final remote in remoteSurveys) {
+      final existingMap = _surveysBox.get(remote.clientSurveyId);
+      if (existingMap != null) {
+        final existing = SurveyModel.fromLocalMap(existingMap);
+        if (!existing.isSynced) {
+          continue;
+        }
+      }
+      await _surveysBox.put(remote.clientSurveyId, remote.toLocalMap());
+    }
+  }
+
+  /// Clears previously cached synced records belonging to another account on login,
+  /// while preserving any unsynced `Pending Sync` surveys safely.
+  Future<void> clearSyncedSurveysForOtherUsers(String activeUserId) async {
+    final keysToDelete = <dynamic>[];
+    for (final entry in _surveysBox.toMap().entries) {
+      final survey = SurveyModel.fromLocalMap(entry.value);
+      if (survey.isSynced &&
+          survey.collectorId != null &&
+          survey.collectorId != activeUserId) {
+        keysToDelete.add(entry.key);
+      }
+    }
+    if (keysToDelete.isNotEmpty) {
+      await _surveysBox.deleteAll(keysToDelete);
+    }
+  }
+
+  /// Clears synced records on explicit logout while keeping offline pending items.
+  Future<void> clearSyncedSurveys() async {
+    final keysToDelete = <dynamic>[];
+    for (final entry in _surveysBox.toMap().entries) {
+      final survey = SurveyModel.fromLocalMap(entry.value);
+      if (survey.isSynced) {
+        keysToDelete.add(entry.key);
+      }
+    }
+    if (keysToDelete.isNotEmpty) {
+      await _surveysBox.deleteAll(keysToDelete);
     }
   }
 }

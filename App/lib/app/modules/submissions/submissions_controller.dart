@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_constants.dart';
@@ -13,6 +14,7 @@ class SubmissionsController extends GetxController {
   final RxList<SurveyModel> surveys = <SurveyModel>[].obs;
   final RxString filterStatus = 'All'.obs; // All | Pending Sync | Synced
   final RxBool isSyncing = false.obs;
+  final RxBool isLoadingRemote = false.obs;
 
   int get totalCount => surveys.length;
   int get pendingCount => surveys.where((s) => !s.isSynced).length;
@@ -32,25 +34,54 @@ class SubmissionsController extends GetxController {
   void onInit() {
     super.onInit();
     loadLocalSurveys();
+    unawaited(pullRemoteSurveys());
   }
 
   void loadLocalSurveys() {
     surveys.assignAll(_surveyRepo.loadAllLocalSurveys());
   }
 
+  Future<void> pullRemoteSurveys({bool showFeedbackOnError = false}) async {
+    if (isLoadingRemote.value) return;
+    final online = await _connectivity.checkNow();
+    if (!online) return;
+
+    isLoadingRemote.value = true;
+    try {
+      await _surveyRepo.fetchRemoteSurveys();
+      loadLocalSurveys();
+    } catch (e) {
+      if (showFeedbackOnError) {
+        Get.snackbar(
+          'Offline / Sync Notice',
+          e.toString().replaceFirst('Exception: ', ''),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppTheme.navyPrimary,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(12),
+        );
+      }
+    } finally {
+      isLoadingRemote.value = false;
+    }
+  }
+
   Future<void> refreshAndSync() async {
     loadLocalSurveys();
     if (pendingCount > 0) {
       await syncNow();
+    } else {
+      await pullRemoteSurveys(showFeedbackOnError: true);
     }
   }
 
   Future<void> syncNow() async {
     if (isSyncing.value) return;
     if (pendingCount == 0) {
+      await pullRemoteSurveys(showFeedbackOnError: true);
       Get.snackbar(
         'All Synced',
-        'Every captured survey is already synchronized with the server.',
+        'Submissions refreshed from server.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppTheme.navyPrimary,
         colorText: Colors.white,
@@ -75,6 +106,11 @@ class SubmissionsController extends GetxController {
     isSyncing.value = true;
     try {
       final result = await _surveyRepo.syncPendingSurveys();
+      try {
+        await _surveyRepo.fetchRemoteSurveys();
+      } catch (_) {
+        // Non-fatal if pull fails right after push
+      }
       loadLocalSurveys();
       Get.snackbar(
         'Sync Completed',
