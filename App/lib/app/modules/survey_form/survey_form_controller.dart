@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/constants/geo_constants.dart';
 import '../../core/services/connectivity_service.dart';
 import '../../core/services/local_storage_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/validators.dart';
 import '../../data/models/survey_model.dart';
 import '../../data/repositories/survey_repository.dart';
 import '../submissions/submissions_controller.dart';
@@ -20,35 +22,76 @@ class SurveyFormController extends GetxController {
   final voterNameController = TextEditingController();
   final ageController = TextEditingController();
   final mobileController = TextEditingController();
-  final constituencyController = TextEditingController();
+  final customConstituencyController = TextEditingController();
   final wardController = TextEditingController();
   final notesController = TextEditingController();
 
+  final RxString selectedState = 'Maharashtra'.obs;
+  final RxString selectedCity = 'Pune'.obs;
+  final RxString selectedConstituency = 'Shivajinagar'.obs;
   final RxString selectedGender = 'Male'.obs;
   final RxString selectedIssue = AppConstants.civicIssues.first.obs;
   final RxString selectedSentiment = 'Positive'.obs;
   final RxBool isSubmitting = false.obs;
   final RxDouble completionRatio = 0.2.obs;
 
+  List<String> get availableCities => GeoConstants.citiesForState(selectedState.value);
+
+  List<String> get availableConstituencies => [
+        ...GeoConstants.constituenciesForCity(selectedState.value, selectedCity.value),
+        GeoConstants.customConstituencyOption,
+      ];
+
+  bool get isCustomConstituency =>
+      selectedConstituency.value == GeoConstants.customConstituencyOption;
+
   @override
   void onInit() {
     super.onInit();
     final savedUser = _storage.getSavedUser();
-    if (savedUser?.assignedConstituency != null &&
-        savedUser!.assignedConstituency!.isNotEmpty) {
-      constituencyController.text = savedUser.assignedConstituency!;
-    } else {
-      constituencyController.text = AppConstants.sampleConstituencies.first;
+    final assignedAc = savedUser?.assignedConstituency;
+    if (assignedAc != null && assignedAc.isNotEmpty) {
+      final matches = availableConstituencies.contains(assignedAc);
+      if (matches) {
+        selectedConstituency.value = assignedAc;
+      } else {
+        selectedConstituency.value = GeoConstants.customConstituencyOption;
+        customConstituencyController.text = assignedAc;
+      }
     }
 
     for (final ctrl in [
       voterNameController,
       ageController,
       mobileController,
-      constituencyController,
+      customConstituencyController,
       wardController,
     ]) {
       ctrl.addListener(_recalculateCompletion);
+    }
+    _recalculateCompletion();
+  }
+
+  void onStateChanged(String newState) {
+    selectedState.value = newState;
+    final cities = availableCities;
+    selectedCity.value = cities.isNotEmpty ? cities.first : '';
+    onCityChanged(selectedCity.value);
+  }
+
+  void onCityChanged(String newCity) {
+    selectedCity.value = newCity;
+    final acList = GeoConstants.constituenciesForCity(selectedState.value, newCity);
+    selectedConstituency.value =
+        acList.isNotEmpty ? acList.first : GeoConstants.customConstituencyOption;
+    customConstituencyController.clear();
+    _recalculateCompletion();
+  }
+
+  void onConstituencyChanged(String newAc) {
+    selectedConstituency.value = newAc;
+    if (newAc != GeoConstants.customConstituencyOption) {
+      customConstituencyController.clear();
     }
     _recalculateCompletion();
   }
@@ -59,8 +102,11 @@ class SurveyFormController extends GetxController {
     if (voterNameController.text.trim().length >= 2) filled++;
     if (int.tryParse(ageController.text.trim()) != null) filled++;
     if (mobileController.text.trim().length == 10) filled++;
-    if (constituencyController.text.trim().length >= 2) filled++;
-    if (wardController.text.trim().isNotEmpty) filled++;
+    final hasAc = isCustomConstituency
+        ? SurveyValidators.validateConstituency(customConstituencyController.text) == null
+        : selectedConstituency.value.isNotEmpty;
+    if (hasAc) filled++;
+    if (SurveyValidators.validateWardNumber(wardController.text) == null) filled++;
     completionRatio.value = (filled / totalRequired).clamp(0.08, 1.0);
   }
 
@@ -69,14 +115,21 @@ class SurveyFormController extends GetxController {
 
     isSubmitting.value = true;
     try {
+      final resolvedAc = isCustomConstituency
+          ? customConstituencyController.text.trim().replaceAll(RegExp(r'\s+'), ' ')
+          : selectedConstituency.value;
+      final normalizedWard = SurveyValidators.normalizeWardNumber(wardController.text);
+
       final survey = SurveyModel(
         clientSurveyId: _uuid.v4(),
         voterFullName: voterNameController.text.trim(),
         age: int.parse(ageController.text.trim()),
         gender: selectedGender.value,
         mobileNumber: mobileController.text.trim(),
-        assemblyConstituency: constituencyController.text.trim(),
-        wardNumber: wardController.text.trim(),
+        state: selectedState.value,
+        city: selectedCity.value,
+        assemblyConstituency: resolvedAc,
+        wardNumber: normalizedWard,
         priorityCivicIssue: selectedIssue.value,
         sentimentRating: selectedSentiment.value,
         surveyorNotes: notesController.text.trim(),
@@ -135,6 +188,7 @@ class SurveyFormController extends GetxController {
     mobileController.clear();
     wardController.clear();
     notesController.clear();
+    customConstituencyController.clear();
     selectedGender.value = 'Male';
     selectedIssue.value = AppConstants.civicIssues.first;
     selectedSentiment.value = 'Positive';
@@ -146,7 +200,7 @@ class SurveyFormController extends GetxController {
     voterNameController.dispose();
     ageController.dispose();
     mobileController.dispose();
-    constituencyController.dispose();
+    customConstituencyController.dispose();
     wardController.dispose();
     notesController.dispose();
     super.onClose();

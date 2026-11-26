@@ -297,8 +297,8 @@ class _AnimatedSurveyCardState extends State<_AnimatedSurveyCard> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${survey.assemblyConstituency} · ${survey.wardNumber}',
-                            style: const TextStyle(fontSize: 12.5, color: Color(0xFF475569)),
+                            '${survey.assemblyConstituency} · ${survey.wardNumber} · ${survey.city}, ${survey.state}',
+                            style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
                           ),
                         ],
                       ),

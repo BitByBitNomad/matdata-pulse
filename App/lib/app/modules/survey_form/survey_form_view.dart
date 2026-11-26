@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/constants/geo_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/validators.dart';
 import 'survey_form_controller.dart';
@@ -107,28 +108,100 @@ class SurveyFormView extends GetView<SurveyFormController> {
           _SectionCard(
             stepNumber: '2',
             title: 'Booth & Civic Pulse',
-            subtitle: 'Constituency, priority issue, and citizen mood',
+            subtitle: 'State, city, validated constituency, and ward mapping',
             children: [
-              TextFormField(
-                controller: controller.constituencyController,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Assembly Constituency *',
-                  hintText: 'e.g., Shivajinagar',
-                  prefixIcon: Icon(Icons.location_city_rounded, size: 20),
-                ),
-                validator: (v) =>
-                    SurveyValidators.validateRequiredField(v, 'Assembly Constituency'),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Obx(
+                      () => DropdownButtonFormField<String>(
+                        initialValue: controller.selectedState.value,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'State *',
+                          prefixIcon: Icon(Icons.public_rounded, size: 19),
+                        ),
+                        items: GeoConstants.states
+                            .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) controller.onStateChanged(val);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Obx(
+                      () => DropdownButtonFormField<String>(
+                        key: ValueKey('city_${controller.selectedState.value}'),
+                        initialValue: controller.selectedCity.value,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'City / District *',
+                          prefixIcon: Icon(Icons.apartment_rounded, size: 19),
+                        ),
+                        items: controller.availableCities
+                            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) controller.onCityChanged(val);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
+              Obx(
+                () => DropdownButtonFormField<String>(
+                  key: ValueKey(
+                    'ac_${controller.selectedState.value}_${controller.selectedCity.value}',
+                  ),
+                  initialValue: controller.selectedConstituency.value,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Assembly Constituency *',
+                    prefixIcon: Icon(Icons.location_city_rounded, size: 20),
+                  ),
+                  items: controller.availableConstituencies
+                      .map((ac) => DropdownMenuItem(value: ac, child: Text(ac)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) controller.onConstituencyChanged(val);
+                  },
+                ),
+              ),
+              Obx(() {
+                if (!controller.isCustomConstituency) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: TextFormField(
+                    controller: controller.customConstituencyController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Enter Assembly Constituency Name *',
+                      hintText: 'e.g., Baramati or Indapur',
+                      prefixIcon: Icon(Icons.edit_location_alt_outlined, size: 20),
+                    ),
+                    validator: SurveyValidators.validateConstituency,
+                  ),
+                );
+              }),
               const SizedBox(height: 12),
               TextFormField(
                 controller: controller.wardController,
+                textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Ward Number *',
-                  hintText: 'e.g., Ward 14',
+                  hintText: '1–300 (e.g., 14 or Ward 14)',
+                  helperText: 'Validated 1–300 and normalized automatically',
                   prefixIcon: Icon(Icons.map_outlined, size: 20),
                 ),
-                validator: (v) => SurveyValidators.validateRequiredField(v, 'Ward Number'),
+                validator: SurveyValidators.validateWardNumber,
               ),
               const SizedBox(height: 12),
               Obx(

@@ -7,6 +7,8 @@ class SurveyModel {
   final int age;
   final String gender;
   final String mobileNumber;
+  final String state;
+  final String city;
   final String assemblyConstituency;
   final String wardNumber;
   final String priorityCivicIssue;
@@ -24,6 +26,8 @@ class SurveyModel {
     required this.age,
     required this.gender,
     required this.mobileNumber,
+    this.state = 'Maharashtra',
+    this.city = 'Pune',
     required this.assemblyConstituency,
     required this.wardNumber,
     required this.priorityCivicIssue,
@@ -50,6 +54,8 @@ class SurveyModel {
       age: age,
       gender: gender,
       mobileNumber: mobileNumber,
+      state: state,
+      city: city,
       assemblyConstituency: assemblyConstituency,
       wardNumber: wardNumber,
       priorityCivicIssue: priorityCivicIssue,
@@ -70,6 +76,8 @@ class SurveyModel {
       'age': age,
       'gender': gender,
       'mobileNumber': mobileNumber,
+      'state': state,
+      'city': city,
       'assemblyConstituency': assemblyConstituency,
       'wardNumber': wardNumber,
       'priorityCivicIssue': priorityCivicIssue,
@@ -87,6 +95,8 @@ class SurveyModel {
       'age': age,
       'gender': gender,
       'mobileNumber': mobileNumber,
+      'state': state,
+      'city': city,
       'assemblyConstituency': assemblyConstituency,
       'wardNumber': wardNumber,
       'priorityCivicIssue': priorityCivicIssue,
@@ -107,6 +117,8 @@ class SurveyModel {
       age: (map['age'] as num).toInt(),
       gender: map['gender'] as String,
       mobileNumber: map['mobileNumber'] as String,
+      state: (map['state'] as String?) ?? 'Maharashtra',
+      city: (map['city'] as String?) ?? 'Pune',
       assemblyConstituency: map['assemblyConstituency'] as String,
       wardNumber: map['wardNumber'] as String,
       priorityCivicIssue: map['priorityCivicIssue'] as String,
